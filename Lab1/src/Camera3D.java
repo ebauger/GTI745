@@ -46,6 +46,13 @@ public class Camera3D {
 	public Camera3D() {
 		reset();
 	}
+	
+	public void setCamera(Point3D position, Point3D target, Vector3D up)
+	{
+		this.position = position;
+		this.target = target;
+		this.up = up;
+	}
 
 	public void reset() {
 		float tangent = (float)Math.tan( fieldOfViewInDegrees/2 / 180 * (float)Math.PI );

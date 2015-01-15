@@ -1,11 +1,10 @@
 
 import java.lang.Math;
+import java.util.ArrayList;
 import java.util.Vector;
-
 import java.awt.Container;
 import java.awt.Component;
 import java.awt.Dimension;
-
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
@@ -13,7 +12,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import java.awt.BorderLayout;
 
+import javax.swing.DefaultListModel;
 import javax.swing.JFrame;
+import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
@@ -21,9 +22,10 @@ import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JScrollPane;
+import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.BoxLayout;
-
 import javax.media.opengl.GL;
 import javax.media.opengl.GLCanvas;
 import javax.media.opengl.GLCapabilities;
@@ -372,6 +374,7 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 	public boolean displayBoundingBox = false;
 	public boolean enableCompositing = false;
 	public boolean enableWireframe = false;
+	public DefaultListModel<CameraPosition> savedCameras = new DefaultListModel<CameraPosition>();
 
 	int mouse_x, mouse_y, old_mouse_x, old_mouse_y;
 
@@ -496,6 +499,23 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 			scene.getBoundingBoxOfScene().getDiagonal().length() * 0.5f
 		) );
 		camera.reset();
+	}
+	
+	public String saveCamera()
+	{
+		CameraPosition pos = new CameraPosition();
+		pos.name = "Camera " + (savedCameras.size() + 1);
+		pos.position = camera.position;
+		pos.target = camera.target;
+		pos.up = camera.up;
+		savedCameras.addElement(pos);
+		return pos.name;
+	}
+	
+	public void restoreSelectedCamera(int index)
+	{
+		CameraPosition pos = savedCameras.get(index);
+		camera.setCamera(pos.position, pos.target, pos.up);
 	}
 
 	public void init( GLAutoDrawable drawable ) {
@@ -808,6 +828,10 @@ public class SimpleModeller implements ActionListener {
 	JCheckBox displayBoundingBoxCheckBox;
 	JCheckBox enableCompositingCheckBox;
 	JCheckBox enableWireframeCheckBox;
+	
+	JList savedCameras;
+	JButton saveCameraButton;
+	JButton restoreCameraButton;
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
@@ -879,6 +903,16 @@ public class SimpleModeller implements ActionListener {
 		}
 		else if ( source == enableWireframeCheckBox ) {
 			sceneViewer.enableWireframe = ! sceneViewer.enableWireframe;
+			sceneViewer.repaint();
+		}
+		else if ( source == saveCameraButton ) {
+			// save
+			sceneViewer.saveCamera();
+		}
+		else if ( source == restoreCameraButton ) {
+			// restore
+			int index = savedCameras.getSelectedIndex();
+			sceneViewer.restoreSelectedCamera(index);
 			sceneViewer.repaint();
 		}
 	}
@@ -982,7 +1016,26 @@ public class SimpleModeller implements ActionListener {
 		enableWireframeCheckBox.addActionListener(this);
 		toolPanel.add( enableWireframeCheckBox );
 
-
+		savedCameras = new JList(sceneViewer.savedCameras);
+		savedCameras.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		savedCameras.setLayoutOrientation(JList.VERTICAL);
+		savedCameras.setVisibleRowCount(-1);
+		
+		JScrollPane listScroller = new JScrollPane(savedCameras);
+		listScroller.setAlignmentX( Component.LEFT_ALIGNMENT );
+		
+		toolPanel.add( listScroller );
+		
+		saveCameraButton = new JButton("Save Camera Position");
+		saveCameraButton.setAlignmentX( Component.LEFT_ALIGNMENT );
+		saveCameraButton.addActionListener(this);
+		toolPanel.add( saveCameraButton );
+		
+		restoreCameraButton = new JButton("Restore Camera Position");
+		restoreCameraButton.setAlignmentX( Component.LEFT_ALIGNMENT );
+		restoreCameraButton.addActionListener(this);
+		toolPanel.add( restoreCameraButton );
+		
 		frame.pack();
 		frame.setVisible( true );
 	}
