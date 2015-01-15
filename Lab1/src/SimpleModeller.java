@@ -153,12 +153,17 @@ class Scene {
 		}
 	}
 
-	public void setColorOfBox( int index, float r, float g, float b ) {
+	public void setColorOfBox( int index, float r, float g, float b) {
+		setColorOfBox(index, r,g,b,ColoredBox.DEFAULT_ALPHA);
+	}
+
+	public void setColorOfBox( int index, float r, float g, float b, float a ) {
 		if ( 0 <= index && index < coloredBoxes.size() ) {
 			ColoredBox cb = coloredBoxes.elementAt(index);
 			cb.r = r;
 			cb.g = g;
 			cb.b = b;
+			cb.a = a;
 		}
 	}
 
@@ -360,6 +365,7 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 	private static final int COMMAND_COLOR_GREEN = 3;
 	private static final int COMMAND_COLOR_BLUE = 4;
 	private static final int COMMAND_DELETE = 5;
+	private static final int COMMAND_EDIT_COLOR = 6;
 
 	public boolean displayWorldAxes = false;
 	public boolean displayCameraTarget = false;
@@ -383,6 +389,7 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		radialMenu.setItemLabelAndID( 3, "Set Color to Yellow", COMMAND_COLOR_YELLOW );
 		radialMenu.setItemLabelAndID( 4, "Set Color to Green", COMMAND_COLOR_GREEN );
 		radialMenu.setItemLabelAndID( 5, "Set Color to Blue", COMMAND_COLOR_BLUE );
+		radialMenu.setItemLabelAndID( 6, "Set RGBa Color", COMMAND_EDIT_COLOR );
 		radialMenu.setItemLabelAndID( 7, "Delete Box", COMMAND_DELETE );
 
 		camera.setSceneRadius( (float)Math.max(
@@ -453,6 +460,12 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 	public void setColorOfSelection( float r, float g, float b ) {
 		if ( indexOfSelectedBox >= 0 ) {
 			scene.setColorOfBox( indexOfSelectedBox, r, g, b );
+		}
+	}
+
+	public void setColorOfSelection( float r, float g, float b, float a ) {
+		if ( indexOfSelectedBox >= 0 ) {
+			scene.setColorOfBox( indexOfSelectedBox, r, g, b, a );
 		}
 	}
 
@@ -645,6 +658,25 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 				break;
 			case COMMAND_DELETE :
 				deleteSelection();
+				break;
+			case COMMAND_EDIT_COLOR:
+				// TODO : ajouter un colorpicker
+				float red, green, blue, alpha;
+				String input;
+				
+				input = JOptionPane.showInputDialog(null, "Please input red value (0-255)", "Red value", JOptionPane.DEFAULT_OPTION);
+				red = Float.parseFloat(input);
+				
+				input = JOptionPane.showInputDialog(null, "Please input green value (0-255)", "Green value", JOptionPane.DEFAULT_OPTION);
+				green = Float.parseFloat(input);
+				
+				input = JOptionPane.showInputDialog(null, "Please input blue value (0-255)", "Blue value", JOptionPane.DEFAULT_OPTION);
+				blue = Float.parseFloat(input);
+				
+				input = JOptionPane.showInputDialog(null, "Please input alpha value (0-1)", "Alpha value", JOptionPane.DEFAULT_OPTION);
+				alpha = Float.parseFloat(input);
+				
+				setColorOfSelection( red / 255f, green / 255f, blue / 255f, alpha);
 				break;
 			}
 
