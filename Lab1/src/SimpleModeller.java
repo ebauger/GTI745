@@ -294,7 +294,8 @@ class Scene {
 	public void drawScene(
 		GL gl,
 		int indexOfHilitedBox, // -1 for none
-		boolean useAlphaBlending
+		boolean useAlphaBlending,
+		boolean enableWireframe
 	) {
 		if ( useAlphaBlending ) {
 			gl.glDisable(GL.GL_DEPTH_TEST);
@@ -308,7 +309,7 @@ class Scene {
 				gl.glColor4f( cb.r, cb.g, cb.b, cb.a );
 			else
 				gl.glColor3f( cb.r, cb.g, cb.b );
-			drawBox( gl, cb.box, false, false, false );
+			drawBox( gl, cb.box, false, enableWireframe, false );
 		}
 		if ( useAlphaBlending ) {
 			gl.glDisable( GL.GL_BLEND );
@@ -364,6 +365,7 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 	public boolean displayCameraTarget = false;
 	public boolean displayBoundingBox = false;
 	public boolean enableCompositing = false;
+	public boolean enableWireframe = false;
 
 	int mouse_x, mouse_y, old_mouse_x, old_mouse_y;
 
@@ -522,7 +524,7 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		gl.glDisable( GL.GL_LIGHTING );
 		gl.glShadeModel( GL.GL_FLAT );
 
-		scene.drawScene( gl, indexOfHilitedBox, enableCompositing );
+		scene.drawScene( gl, indexOfHilitedBox, enableCompositing, enableWireframe );
 
 		if ( displayWorldAxes ) {
 			gl.glBegin( GL.GL_LINES );
@@ -767,6 +769,7 @@ public class SimpleModeller implements ActionListener {
 	JCheckBox displayCameraTargetCheckBox;
 	JCheckBox displayBoundingBoxCheckBox;
 	JCheckBox enableCompositingCheckBox;
+	JCheckBox enableWireframeCheckBox;
 
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
@@ -834,6 +837,10 @@ public class SimpleModeller implements ActionListener {
 		}
 		else if ( source == enableCompositingCheckBox ) {
 			sceneViewer.enableCompositing = ! sceneViewer.enableCompositing;
+			sceneViewer.repaint();
+		}
+		else if ( source == enableWireframeCheckBox ) {
+			sceneViewer.enableWireframe = ! sceneViewer.enableWireframe;
 			sceneViewer.repaint();
 		}
 	}
@@ -931,6 +938,12 @@ public class SimpleModeller implements ActionListener {
 		enableCompositingCheckBox.setAlignmentX( Component.LEFT_ALIGNMENT );
 		enableCompositingCheckBox.addActionListener(this);
 		toolPanel.add( enableCompositingCheckBox );
+
+		enableWireframeCheckBox = new JCheckBox("Draw Wireframe Boxes", sceneViewer.enableWireframe );
+		enableWireframeCheckBox.setAlignmentX( Component.LEFT_ALIGNMENT );
+		enableWireframeCheckBox.addActionListener(this);
+		toolPanel.add( enableWireframeCheckBox );
+
 
 		frame.pack();
 		frame.setVisible( true );
