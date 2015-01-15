@@ -588,6 +588,7 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		mouse_y = e.getY();
 
 		if ( radialMenu.isVisible() || (SwingUtilities.isRightMouseButton(e) && !e.isShiftDown() && !e.isControlDown()) ) {
+			updateSelectedBox();
 			int returnValue = radialMenu.pressEvent( mouse_x, mouse_y );
 			if ( returnValue == CustomWidget.S_REDRAW )
 				repaint();
@@ -598,16 +599,21 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 		updateHiliting();
 
 		if ( SwingUtilities.isLeftMouseButton(e) && !e.isControlDown() ) {
-			if ( indexOfSelectedBox >= 0 )
-				// de-select the old box
-				scene.setSelectionStateOfBox( indexOfSelectedBox, false );
-			indexOfSelectedBox = indexOfHilitedBox;
-			selectedPoint.copy( hilitedPoint );
-			normalAtSelectedPoint.copy( normalAtHilitedPoint );
-			if ( indexOfSelectedBox >= 0 ) {
-				scene.setSelectionStateOfBox( indexOfSelectedBox, true );
-			}
+			updateSelectedBox();
 			repaint();
+		}
+	}
+	
+	private void updateSelectedBox()
+	{
+		if ( indexOfSelectedBox >= 0 )
+			// de-select the old box
+			scene.setSelectionStateOfBox( indexOfSelectedBox, false );
+		indexOfSelectedBox = indexOfHilitedBox;
+		selectedPoint.copy( hilitedPoint );
+		normalAtSelectedPoint.copy( normalAtHilitedPoint );
+		if ( indexOfSelectedBox >= 0 ) {
+			scene.setSelectionStateOfBox( indexOfSelectedBox, true );
 		}
 	}
 
