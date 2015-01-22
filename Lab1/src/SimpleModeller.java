@@ -2,9 +2,11 @@
 import java.lang.Math;
 import java.util.ArrayList;
 import java.util.Vector;
+import java.awt.Color;
 import java.awt.Container;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseEvent;
@@ -33,6 +35,7 @@ import javax.media.opengl.GLAutoDrawable;
 // import javax.media.opengl.GLDrawableFactory;
 import javax.media.opengl.GLEventListener;
 
+import com.bric.swing.ColorPicker;
 import com.sun.opengl.util.GLUT;
 
 
@@ -166,7 +169,7 @@ class Scene {
 			cb.g = g;
 			cb.b = b;
 			cb.a = a;
-		}
+		}		
 	}
 
 	public void translateBox( int index, Vector3D translation ) {
@@ -680,23 +683,17 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 				deleteSelection();
 				break;
 			case COMMAND_EDIT_COLOR:
-				// TODO : ajouter un colorpicker
 				float red, green, blue, alpha;
 				String input;
 				
-				input = JOptionPane.showInputDialog(null, "Please input red value (0-255)", "Red value", JOptionPane.DEFAULT_OPTION);
-				red = Float.parseFloat(input);
+				Color newColor = ColorPicker.showDialog(null, "Color Picker Dialog", new Color(255,255,255), true);
+				red = newColor.getRed(); 
+				green = newColor.getGreen();
+				blue = newColor.getBlue();
+				alpha = newColor.getAlpha();
 				
-				input = JOptionPane.showInputDialog(null, "Please input green value (0-255)", "Green value", JOptionPane.DEFAULT_OPTION);
-				green = Float.parseFloat(input);
-				
-				input = JOptionPane.showInputDialog(null, "Please input blue value (0-255)", "Blue value", JOptionPane.DEFAULT_OPTION);
-				blue = Float.parseFloat(input);
-				
-				input = JOptionPane.showInputDialog(null, "Please input alpha value (0-1)", "Alpha value", JOptionPane.DEFAULT_OPTION);
-				alpha = Float.parseFloat(input);
-				
-				setColorOfSelection( red / 255f, green / 255f, blue / 255f, alpha);
+				setColorOfSelection( red / 255f, green / 255f, blue / 255f, alpha / 255f);
+
 				break;
 			}
 
