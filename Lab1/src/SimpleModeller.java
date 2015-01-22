@@ -1,42 +1,42 @@
 
-import java.lang.Math;
-import java.util.ArrayList;
-import java.util.Vector;
+import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Container;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.awt.BorderLayout;
+import java.util.Vector;
 
+import javax.media.opengl.GL;
+import javax.media.opengl.GLAutoDrawable;
+import javax.media.opengl.GLCanvas;
+import javax.media.opengl.GLCapabilities;
+// import javax.media.opengl.GLDrawableFactory;
+import javax.media.opengl.GLEventListener;
+import javax.swing.BoxLayout;
 import javax.swing.DefaultListModel;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JList;
-import javax.swing.JPanel;
-import javax.swing.JMenuBar;
 import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import javax.swing.JCheckBox;
-import javax.swing.JButton;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.BoxLayout;
-import javax.media.opengl.GL;
-import javax.media.opengl.GLCanvas;
-import javax.media.opengl.GLCapabilities;
-import javax.media.opengl.GLAutoDrawable;
-// import javax.media.opengl.GLDrawableFactory;
-import javax.media.opengl.GLEventListener;
-
-import com.bric.swing.ColorPicker;
 import com.sun.opengl.util.GLUT;
+
+// external library
+// by: Jeremy Wood
+// from: http://javagraphics.blogspot.ca/2007/04/jcolorchooser-making-alternative.html
+import com.bric.swing.ColorPicker;
 
 
 class ColoredBox {
@@ -684,16 +684,17 @@ class SceneViewer extends GLCanvas implements MouseListener, MouseMotionListener
 				break;
 			case COMMAND_EDIT_COLOR:
 				float red, green, blue, alpha;
-				String input;
 				
 				Color newColor = ColorPicker.showDialog(null, "Color Picker Dialog", new Color(255,255,255), true);
-				red = newColor.getRed(); 
-				green = newColor.getGreen();
-				blue = newColor.getBlue();
-				alpha = newColor.getAlpha();
-				
-				setColorOfSelection( red / 255f, green / 255f, blue / 255f, alpha / 255f);
-
+				if(newColor != null)
+				{
+					red = newColor.getRed(); 
+					green = newColor.getGreen();
+					blue = newColor.getBlue();
+					alpha = newColor.getAlpha();
+					
+					setColorOfSelection( red / 255f, green / 255f, blue / 255f, alpha / 255f);
+				}
 				break;
 			}
 
