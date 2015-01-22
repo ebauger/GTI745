@@ -26,9 +26,10 @@ Librairies externes
 
 	ColorPicker.jar
 	===============
-	Pour la modification D1 nous avons utilisé une librairie externe pour avoir un 	sélecteur de couleur.
+	Pour la modification D1 nous avons utilisé une librairie externe pour avoir un 		sélecteur de couleur.
 	
 	Auteur : Jeremy Wood
 	
-	Source et explication de la librairie: http://javagraphics.blogspot.ca/2007/04/	jcolorchooser-making-alternative.html
+	Source et explication de la librairie: 
+	http://javagraphics.blogspot.ca/2007/04/jcolorchooser-making-alternative.html
 
