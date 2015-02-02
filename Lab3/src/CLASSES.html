@@ -1,0 +1,394 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+  <head>
+
+    <meta http-equiv="content-type" content="text/html; charset=ISO-8859-1">
+  </head>
+  <body>
+    <table border="">
+      <tbody>
+        <tr>
+          <th>Fichier</th>
+          <th>Classe(s) d&eacute;finie(s)</th>
+          <th>Description</th>
+        </tr>
+        <tr>
+          <td><a href="Point2D.java">Point2D.java</a></td>
+          <td>Point2D</td>
+          <td rowspan="3">Des classes de nature math&eacute;matique /
+            g&eacute;om&eacute;trique</td>
+        </tr>
+        <tr>
+          <td><a href="Vector2D.java">Vector2D.java</a></td>
+          <td>Vector2D</td>
+        </tr>
+        <tr>
+          <td><a href="AlignedRectangle2D.java">AlignedRectangle2D.java</a></td>
+          <td>AlignedRectangle2D</td>
+        </tr>
+        <tr>
+          <td><a href="Point2DUtil.java">Point2DUtil.java</a></td>
+          <td>Point2DUtil</td>
+          <td>Une classe contenant des m&eacute;thodes pour tester si un
+            point est &agrave; l'int&eacute;rieur d'un polygone (utile
+            pour r&eacute;aliser des effets de surbrilliance, et pour
+            r&eacute;aliser la s&eacute;lection en lasso), pour calculer
+            l'enveloppe convexe d'un ensemble de points (utile pour
+            dessiner des "bulles" autour d'un ou plusieurs objets), et
+            pour transformer un ensemble de points selon le
+            d&eacute;placement d'un ou deux doigts (utile dans les
+            interfaces multitactiles). </td>
+        </tr>
+        <tr>
+          <td><a href="GraphicsWrapper.java">GraphicsWrapper.java</a></td>
+          <td>GraphicsWrapper</td>
+          <td>Pour dessiner en 2D en Java, souvent on utilise
+            Graphics2D.&nbsp; Toutefois, si on veut dessiner beaucoup
+            d'objets 2D rapidement, il est plus performant d'utiliser
+            OpenGL (&agrave; travers JOGL).&nbsp; GraphicsWrapper
+            facilite le dessin en 2D, et "emballe" les
+            diff&eacute;rences entre Graphics2D et OpenGL (le mot
+            "wrapper" veut dire "emballeur").&nbsp; Il y a trois
+            int&eacute;r&ecirc;ts &agrave; utiliser GraphicsWrapper au
+            lieu d'utiliser Graphics2D ou OpenGL directement: d'abord,
+            GraphicsWrapper facilite la gestion de zoom et pan dans une
+            vue 2D (transformation entre les syst&egrave;mes de
+            coordonn&eacute;es "pixels" et "espace monde" au moment du
+            dessin et au moment de la r&eacute;ception
+            d'&eacute;v&eacute;nements de souris). Deuxi&egrave;mement,
+            elle permet de dessiner des formes
+            g&eacute;om&eacute;triques simples (lignes, rectangles,
+            cercles) en une seule ligne de code chaque, au lieu des
+            quelques lignes de code n&eacute;cessaires avec OpenGL
+            (glBegin(), glVertex(), ..., glEnd()).&nbsp;
+            Troisi&egrave;mement, l'implementation qui vous est fournie
+            de GraphicsWrapper utilise OpenGL pour dessiner, mais on
+            pourrait &eacute;ventuellement changer cette implementation
+            pour une autre version qui utilise Java2D/Graphics2D pour
+            dessiner, ce qui permettrait de d&eacute;ployer le code sous
+            forme d'Applet sur le web (si on enlevait les aspects
+            multitactiles du code client). <br>
+            <br>
+            Pour compiler et ex&eacute;cuter cette implementation de
+            GraphicsWrapper, vous avez besoin de la librarie JOGL. Une
+            copie se trouve au <a
+              href="http://profs.etsmtl.ca/mmcguffin/code/java/lib/JOGL/">http://profs.etsmtl.ca/mmcguffin/code/java/lib/JOGL/</a>
+          </td>
+        </tr>
+        <tr>
+          <td><a href="Constant.java">Constant.java</a></td>
+          <td>Constant</td>
+          <td>Quelques constantes. <br>
+            <br>
+            Changez NUM_USERS pour changer le nombre de palettes qui
+            sont cr&eacute;&eacute;es. </td>
+        </tr>
+        <tr>
+          <td><a
+              href="org/mt4j/input/inputSources/Win7NativeTouchSource.java">org/mt4j/input/inputSources/Win7NativeTouchSource.java</a></td>
+          <td>Win7NativeTouchSource, Native_WM_TOUCH_Event</td>
+          <td>Une classe tir&eacute;e de la librarie MT4j. Le chemin
+            relatif vers cette classe ne doit pas changer, car elle
+            utilise un .DLL (Win7Touch.dll) qui s'attend &agrave;
+            communiquez avec la classe
+            Java.org.mt4j.input.inputSources.Win7NativeTouchSource <br>
+            <br>
+            Cette classe a seulement besoin d'&ecirc;tre compil&eacute;e
+            si vous voulez utiliser WM_TOUCH pour recevoir les
+            &eacute;v&eacute;nements multitactiles. Elle est
+            utilis&eacute;e par la version WM_TOUCH du
+            MultitouchFramework (MultitouchFramework-WM_TOUCH.java) </td>
+        </tr>
+        <tr>
+          <td><a href="MultitouchFramework.java">MultitouchFramework.java</a></td>
+          <td>MultitouchFramework</td>
+          <td>Un cadriciel qui re&ccedil;oit les
+            &eacute;v&eacute;nements multitactiles (soit via TUIO, ou
+            WM_TOUCH, ou de la souris permettant de simuler plusieurs
+            points de contact) et ensuite appelle des m&eacute;thodes
+            dans le code client. Ce fichier contient le point
+            d'entr&eacute;e main(). Il y a trois versions de ce fichier,
+            dans le r&eacute;pertoire "doNotCompile":
+            MultitouchFramework-MOUSE.java,
+            MultitouchFramework-TUIO.java, et
+            MultitouchFramework-WM_TOUCH.java. Copiez une de ces
+            versions par dessus le fichier MultitouchFramework.java, en
+            changeant le nom de fichier, avant de compiler. <b>Ne
+              modifiez pas votre copie de MultitouchFramework.java, car
+              ces modifications pourront &ecirc;tre perdues, brisant
+              votre code, lorsque vous copiez une autre version par
+              dessus.</b> La version "-MOUSE" est utile pour travailler
+            hors du laboratoire, quand vous n'avez pas acc&egrave;s
+            &agrave; un dispositif multitactile, car elle permet de
+            simuler un ou plusieurs doigts avec la souris. La version
+            "-WM_TOUCH" n&eacute;cessite de compiler avec quelques
+            fichiers tir&eacute;s de la librarie MT4j, et aussi
+            org/mt4j/input/inputSources/Win7NativeTouchSource.java, et
+            fonctionne seulement sur MS Windows 7. La version "-TUIO"
+            n&eacute;cessite de compiler avec la librarie libTUIO.jar. <br>
+            <br>
+            Pour compiler et ex&eacute;cuter la version "-WM_TOUCH", les
+            fichiers n&eacute;cessaires de MT4j se trouvent au <a
+              href="http://profs.etsmtl.ca/mmcguffin/code/java/lib/MT4j/">http://profs.etsmtl.ca/mmcguffin/code/java/lib/MT4j/</a>
+            <br>
+            <br>
+            Quand vous utilisez la version "-MOUSE", pour simuler un
+            seul doigt, faites Ctrl+bouton droit (appuyer, glisser,
+            rel&acirc;cher). Pour simuler plusieurs doigts, faites
+            Ctrl-bouton gauche (appuyer, glisser, rel&acirc;cher;
+            plusieurs fois si vous voulez) pour chaque doigt que vous
+            voulez simuler, ensuite pour faire rel&acirc;cher un doigt
+            virtuel faites Ctrl+bouton droit sur le curseur du doigt. En
+            r&eacute;sum&eacute;:<br>
+            <b>Ctrl-clic gauche</b> simule un doigt qui appuie et glisse
+            et reste appuy&eacute;,<br>
+            <b>Ctrl-clic droit</b> simule un doigt qui appuie et glisse
+            et rel&acirc;che. <br>
+          </td>
+        </tr>
+        <tr>
+          <td><a href="SimpleWhiteboard.java">SimpleWhiteboard.java</a></td>
+          <td>Stroke, Drawing, MyCursor, CursorContainer, PaletteButton,
+            Palette, UserContext, SimpleWhiteboard</td>
+          <td>Les classes principales. SimpleWhiteboard est le client de
+            MultitouchFramework. <br>
+            <br>
+            La derni&egrave;re m&eacute;thode dans ce fichier,
+            processMultitouchInputEvent(), est appell&eacute;e quand un
+            doigt (simul&eacute; ou non) appuie, glisse, ou
+            rel&acirc;che. Chaque doigt est assign&eacute; un
+            identifiant unique (un entier). Les param&egrave;tres
+            &agrave; la m&eacute;thode processMultitouchInputEvent()
+            sont<br>
+            int id : l'identifiant unique du doigt<br>
+            float x, float y : la position du doigt, en
+            coordonn&eacute;es pixels (x+ vers le droit, y+ vers le bas)<br>
+            int type : soit MultitouchFramework.TOUCH_EVENT_DOWN,
+            MultitouchFramework.TOUCH_EVENT_MOVE, ou
+            MultitouchFramework.TOUCH_EVENT_UP<br>
+            <br>
+            <br>
+            <br>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    &nbsp;<br>
+    &nbsp;<br>
+    &nbsp;<br>
+    &nbsp;<br>
+    &nbsp;<br>
+
+<pre>
+   L&eacute;gende:
+
+            :
+            :   appelle
+            v
+
+
+            |
+            |   contient
+            v
+
+
+
+   +-- MultitouchFramework.java ------------------+
+   |                                              |
+   |               class MultitouchFramework      |
+   |                                      :       |
+   +------------------------------------- : ------+
+                                          :
+                                          :
+   +-- SimpleWhiteboard.java ------------ : ---------------------------------+
+   |                                      :                                  |
+   |   class SimpleWhiteboard             v                                  |
+   |        |          |     SimpleWhiteboard.processMultitouchInputEvent()  |
+   |        |          |                  :                                  |
+   |        |          |                  :                                  |
+   |        |          v                  :                                  |
+   |        |   class UserContext         v                                  |
+   |        |      |   |     UserContext.processMultitouchInputEvent()       |
+   |        |      |   v                                                     |
+   |        |      |  class Palette                                          |
+   |        |      |     |                                                   |
+   |        |      |     v                                                   |
+   |        |      |   class PaletteButton                                   |
+   |        |      v                                                         |
+   |        |   class CursorContainer                                        |
+   |        |             |                                                  |
+   |        |             v                                                  |
+   |        |     class MyCursor                                             |
+   |        v                                                                |
+   |     class Drawing                                                       |
+   |           |                                                             |
+   |           v                                                             |
+   |      class Stroke                                                       |
+   |                                                                         |
+   +-------------------------------------------------------------------------+
+</pre>
+
+<p>
+La classe principale, SimpleWhiteboard, stocke un certain nombre d'instances de UserContext,
+un pour chaque utilisateur.
+
+<p>
+Chaque UserContext stocke une instance de Palette, et une instance de CursorContainer,
+et une liste des traits de crayon qui sont actuellement s&eacute;lectionn&eacute;s:
+<pre>
+          class UserContext {
+              ...
+              ArrayList< Stroke > selectedStrokes = ...
+              ...
+          }
+</pre>
+
+<p>
+Chaque Palette stocke un certain nombre d'instances de PaletteButton.
+
+<p>
+Chaque CursorContainer stocke un certain nombre d'instances de MyCursor.
+
+<p>
+Une instance de MyCursor est stock&eacute;e pour chaque doigt en contact
+avec l'&eacute;cran multitactile.
+Lorsqu'un doigt touche l'&eacute;cran pour la premi&egrave;re fois,
+cela g&eacute;n&egrave;re un &eacute;v&eacute;nement de type MultitouchFramework.TOUCH_EVENT_DOWN,
+et SimpleWhiteboard.processMultitouchInputEvent() d&eacute;cide vers quel UserContext l'acheminer
+et appelle UserContext.processMultitouchInputEvent().
+Ensuite, UserContext.processMultitouchInputEvent() demande au CursorContainer
+de cr&eacute;er une nouvelle instance de
+MyCursor pour le doigt.
+Plus tard, &agrave; chaque fois que le doigt se d&eacute;place et g&eacute;n&egrave;re
+un &eacute;v&eacute;nement de type
+MultitouchFramework.TOUCH_EVENT_MOVE,
+la nouvelle position du doigt est stock&eacute;e dans l'instance correspondante de MyCursor.
+Finalement, quand le doigt perd contact avec l'&eacute;cran, un &eacute;v&eacute;nement de type
+MultitouchFramework.TOUCH_EVENT_UP est g&eacute;n&eacute;r&eacute;,
+et le MyCursor correspondant est supprim&eacute;.
+
+<p>
+Pendant les glissements de doigts, l'instance correspondante de MyCursor stocke
+un historique complet des positions du doigt,
+permettant de dessiner des traits de crayons ou des polygones de lasso pour la s&eacute;lection.
+
+<p>
+Chaque instance de MyCursor a un type, stock&eacute; dans la variable Cursor.type,
+qui est &eacute;gale &agrave; une
+des valeurs suivantes:
+<pre>
+          MyCursor.TYPE_<font color="red">NOTHING</font>
+          MyCursor.TYPE_<font color="red">INTERACTING_WITH_WIDGET</font>
+          MyCursor.TYPE_<font color="red">INKING</font>
+          MyCursor.TYPE_<font color="red">CAMERA_PAN_ZOOM</font>
+          MyCursor.TYPE_<font color="red">SELECTION</font>
+          MyCursor.TYPE_<font color="red">DIRECT_MANIPULATION</font>
+</pre>
+Si le doigt correspondant a appuy&eacute; un bouton de palette,
+le type sera TYPE_<font color="red">INTERACTING_WITH_WIDGET</font>.
+Si le doigt dessine un trait de crayon, le type sera TYPE_<font color="red">INKING</font>.
+Etc.
+
+<p>
+Chaque instance de Palette a un mode actuel, stock&eacute; dans la variable Palette.currentlyActiveModalButton,
+qui est &eacute;gale &agrave; une des quatre valeurs suivantes:
+<pre>
+          Palette.<font color="red">ink</font>_buttonIndex
+          Palette.<font color="red">select</font>_buttonIndex
+          Palette.<font color="red">manipulate</font>_buttonIndex
+          Palette.<font color="red">camera</font>_buttonIndex
+</pre>
+
+<ul>
+<li>Dans le premier mode (currentlyActiveModalButton == <font color="red">ink</font>_buttonIndex), les doigts qui touchent
+pr&egrave;s de la palette auront comme type Cursor.type == MyCursor.TYPE_<font color="red">INKING</font>,
+et pourront dessiner des traits de crayon.
+
+<li>Dans le deuxi&egrave;me mode (currentlyActiveModalButton == <font color="red">select</font>_buttonIndex),
+le premier doigt qui touche pr&egrave;s de la palette aura Cursor.type == MyCursor.TYPE_<font color="red">SELECTION</font>,
+et ce doigt pourra s&eacute;lectionner en rectangle ou en lasso (si d'autres doigts touchent en m&ecirc;me temps,
+ils auront Cursor.type == MyCursor.TYPE_<font color="red">NOTHING</font>, les emp&ecirc;chant de faire quoique ce soit).
+
+<li>Dans le troisi&egrave;me mode (currentlyActiveModalButton == <font color="red">manipulate</font>_buttonIndex),
+les deux premiers doigts qui touchent pr&egrave;s de la palette auront Cursor.type == MyCursor.TYPE_<font color="red">DIRECT_MANIPULATION</font>,
+et ces doigts pourront d&eacute;placer, tourner, et redimenssioner les traits s&eacute;lectionn&eacute;s.
+(Si d'autres doigts touchent en m&ecirc;me temps, ils auront Cursor.type == MyCursor.TYPE_<font color="red">NOTHING</font>, les emp&ecirc;chant de faire quoique ce soit).
+
+<li>Dans le quatri&egrave;me mode (currentlyActiveModalButton == <font color="red">camera</font>_buttonIndex),
+les deux premiers doigts qui touchent pr&egrave;s de la palette auront Cursor.type == MyCursor.TYPE_<font color="red">CAMERA_PAN_ZOOM</font>,
+et ces doigts pourront faire un pan et zoom de la cam&eacute;ra.
+(Si d'autres doigts touchent en m&ecirc;me temps, ils auront Cursor.type == MyCursor.TYPE_<font color="red">NOTHING</font>, les emp&ecirc;chant de faire quoique ce soit).
+</ul>
+
+<p>
+La m&eacute;thode UserContext.processMultitouchInputEvent() fait environ 400 lignes, et peut sembler complexe.
+Elle est au centre du traitement des &eacute;v&eacute;nements g&eacute;n&eacute;r&eacute;s par les doigts,
+et elle doit traiter plusieurs cas possibles.
+Dans cette m&eacute;thode, on retrouve une sorte d'arborescence d'&eacute;nonc&eacute;s "if-else".
+Voici une vue d'ensemble de la m&eacute;thode, qui pourra vous aider &agrave; vous retrouver dedans:
+<pre>
+   if (l'&eacute;v&eacute;nement n'a pas de MyCursor d&eacute;j&agrave; correspondant)
+       // On suppose que c'est un nouveau doigt qui vient de toucher.
+       // On va devoir cr&eacute;er une nouvelle instance de MyCursor pour ce doigt.
+
+       if (le doigt a touch&eacute; par dessus la palette)
+           if (il n'y a pas d&eacute;j&agrave; d'autres doigts sur la palette)
+               // On branche selon le bouton appuy&eacute; par le doigt actuel
+               if ...
+               else if ...
+               else if ...
+               ...
+           else
+               // On cr&eacute;e une nouvelle instance de MyCursor
+               ...
+               // On emp&ecirc;che que ce doigt fasse quoique ce soit
+               cursor.setType( MyCursor.TYPE_NOTHING );
+       else
+           // Le doigt a touch&eacute; pr&egrave;s de la palette, par dessus la toile.
+           // On branche selon le mode actuel
+           if ( currentlyActiveModalButton == ... )
+           else if ( currentlyActiveModalButton == ... )
+           else if ...
+           ...
+   else
+       // Il existe d&eacute;j&agrave; un MyCursor pour le doigt.
+       // On suppose que l'&eacute;v&eacute;nement est un mouvement de doigt ou bien un rel&acirc;chement de doigt.
+       // On branche selon le type de MyCursor
+       if ( cursor.type == ... )
+       else if ( cursor.type == ... )
+       else if ...
+       ...
+</pre>
+
+
+<p>
+<hr>
+
+<p>
+Il y a certaines m&eacute;thodes dans le code qui vous serviront fort probablement pas,
+auxquelles vous pouvez porter peu d'attention.
+<ul>
+<li>Dans la classe SimpleWhiteboard, les m&eacute;thodes
+    createMenuBar(), createPanelOfWidgets(),
+    et actionPerformed() implementent une barre de menu et un panneau de widgets SWING
+    qui pourraient &ecirc;tre utiles dans certaines circonstances, mais
+    malheuresement ne fonctionnent pas avec les doigts.
+    Dans la version du code fournie, ces m&eacute;thodes ne sont pas appel&eacute;es.
+    Pour les faire appeler, il faut faire
+    <pre>
+              HAS_MENUBAR = true;
+              HAS_PANEL_OF_WIDGETS = true;
+    </pre>
+    dans Constant.java.
+
+<li>Encore dans SimpleWhiteboard, les m&eacute;thodes
+    startBackgroundWork(), stopBackgroundWork(),
+    et run() peuvent servir &agrave; programmer des animations ou du travail
+    &agrave; faire en arri&eacute;re plan.
+    Actuellement,
+    ces m&eacute;thodes ne font rien d'utile.
+</ul>
+
+
+  </body>
+</html>

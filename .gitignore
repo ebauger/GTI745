@@ -50,4 +50,5 @@ hs_err_pid*
 
 !jogl_lib/*.jar
 !external_libraries/*.jar
+!MT4j/*.jar
 .recommenders/
