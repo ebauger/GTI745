@@ -368,6 +368,7 @@ class Palette {
 	public int red_buttonIndex;
 	public int green_buttonIndex;
 	public int horizFlip_buttonIndex;
+	public int vertFlip_buttonIndex;
 	public int frameAll_buttonIndex;
 
 
@@ -430,7 +431,11 @@ class Palette {
 		horizFlip_buttonIndex = buttons.size();
 		buttons.add( b );
 
-		b = new PaletteButton( 4*W, H, "Frame all", "Frames the entire drawing.", false );
+		b = new PaletteButton( 4*W, H, "Ver. Flip", "Flip the selection vertically (around a horizontal axis).", false );
+		vertFlip_buttonIndex = buttons.size();
+		buttons.add( b );
+
+		b = new PaletteButton( 5*W, H, "Frame all", "Frames the entire drawing.", false );
 		frameAll_buttonIndex = buttons.size();
 		buttons.add( b );
 
@@ -678,7 +683,7 @@ class UserContext {
 						cursor = cursorContainer.getCursorByIndex( cursorIndex );
 						cursor.setType( MyCursor.TYPE_INTERACTING_WITH_WIDGET, indexOfButton );
 					}
-					else if ( indexOfButton == palette.horizFlip_buttonIndex ) {
+					else if ( indexOfButton == palette.horizFlip_buttonIndex || indexOfButton == palette.vertFlip_buttonIndex ) {
 						palette.buttons.get( indexOfButton ).isPressed = true;
 
 						// Cause a new cursor to be created to keep track of this event id in the future
@@ -690,7 +695,14 @@ class UserContext {
 						for ( Stroke s : selectedStrokes ) {
 							Point2D center = s.getBoundingRectangle().getCenter();
 							for ( Point2D p : s.getPoints() ) {
-								p.copy( center.x() - (p.x()-center.x()), p.y() );
+								if(indexOfButton == palette.horizFlip_buttonIndex)
+								{
+									p.copy( center.x() - (p.x()-center.x()), p.y() );
+								}
+								else
+								{
+									p.copy(p.x(), center.y() - (p.y()-center.y()) );
+								}
 							}
 							s.markBoundingRectangleDirty();
 						}
