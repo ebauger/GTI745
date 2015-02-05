@@ -370,6 +370,7 @@ class Palette {
 	public int horizFlip_buttonIndex;
 	public int vertFlip_buttonIndex;
 	public int frameAll_buttonIndex;
+	public int undo_buttonIndex;
 
 
 	public int currentlyActiveModalButton; // could be equal to any of ink_buttonIndex, select_buttonIndex, manipulate_buttonIndex, camera_buttonIndex
@@ -438,6 +439,12 @@ class Palette {
 		b = new PaletteButton( 5*W, H, "Frame all", "Frames the entire drawing.", false );
 		frameAll_buttonIndex = buttons.size();
 		buttons.add( b );
+		
+		// Create third row of buttons
+		
+		b = new PaletteButton(   0, 2*H, "Undo", "Undo last stroke..", false );
+		undo_buttonIndex = buttons.size();
+		buttons.add( b );
 
 
 		// Initialize remaining state
@@ -495,6 +502,7 @@ class UserContext {
 	public Palette palette = new Palette();
 	private CursorContainer cursorContainer = new CursorContainer();
 	private Drawing drawing = null;
+	private Stroke lastStrokeCreated = null;
 
 	private ArrayList< Stroke > selectedStrokes = new ArrayList< Stroke >();
 
@@ -719,6 +727,18 @@ class UserContext {
 						// Frame the entire drawing
 						gw.frame( drawing.getBoundingRectangle(), true );
 					}
+					else if ( indexOfButton == palette.undo_buttonIndex ) 
+					{
+						palette.buttons.get( indexOfButton ).isPressed = true;
+
+						// Cause a new cursor to be created to keep track of this event id in the future
+						cursorIndex = cursorContainer.updateCursorById( id, x, y );
+						cursor = cursorContainer.getCursorByIndex( cursorIndex );
+						cursor.setType( MyCursor.TYPE_INTERACTING_WITH_WIDGET, indexOfButton );
+						
+						drawing.strokes.remove(lastStrokeCreated);
+						lastStrokeCreated = null;
+					}
 					else {
 						// The event occurred on some part of the palette where there are no buttons.
 						// We cause a new cursor to be created to keep track of this event id in the future.
@@ -873,6 +893,8 @@ class UserContext {
 						newStroke.addPoint( gw.convertPixelsToWorldSpaceUnits( p ) );
 					}
 					drawing.addStroke( newStroke );
+					
+					lastStrokeCreated = newStroke;
 
 					cursorContainer.removeCursorByIndex( cursorIndex );
 				}
@@ -1047,7 +1069,7 @@ public class SimpleWhiteboard implements Runnable, ActionListener {
 		}
 		else {
 			// Compute a circular layout of the palettes
-			float radius = Math.min( Constant.INITIAL_WINDOW_WIDTH, Constant.INITIAL_WINDOW_HEIGHT )/4;
+			float radius = Math.min( Constant.INITIAL_WINDOW_WIDTH, Constant.INITIAL_WINDOW_HEIGHT )/3;
 			for ( int j = 0; j < Constant.NUM_USERS; ++j ) {
 				float angleInRadians = (float)( 2 * Math.PI * j / Constant.NUM_USERS );
 				userContexts[j].setPositionOfCenterOfPalette(
@@ -1151,7 +1173,7 @@ public class SimpleWhiteboard implements Runnable, ActionListener {
 						}
 					}
 				}
-				thread.sleep( sleepIntervalInMilliseconds );  // interval given in milliseconds
+				Thread.sleep( sleepIntervalInMilliseconds );  // interval given in milliseconds
 			}
 		}
 		catch (InterruptedException e) { }
