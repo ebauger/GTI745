@@ -481,7 +481,7 @@ class Palette {
 
 
 class UserContext {
-	private Palette palette = new Palette();
+	public Palette palette = new Palette();
 	private CursorContainer cursorContainer = new CursorContainer();
 	private Drawing drawing = null;
 
@@ -1136,6 +1136,18 @@ public class SimpleWhiteboard implements Runnable, ActionListener {
 			userContexts[j].draw(gw);
 		}
 
+		// Modification #1
+		if ( Constant.NUM_USERS == 2 ) {
+			Point2D center0 = userContexts[0].palette.getCenter();
+			Point2D center1 = userContexts[1].palette.getCenter();
+			Vector2D direction = Point2D.diff( center1, center0 ).normalized();
+			direction.copy( - direction.y(), direction.x() ); // rotation de 90 degrés
+			Point2D centerOfDividingLine = Point2D.average( center0, center1 );
+			
+			Point2D pt1 = Point2D.sum(centerOfDividingLine, Vector2D.mult(direction, 10000));
+			Point2D pt2 = Point2D.sum(centerOfDividingLine, Vector2D.mult(direction, -10000));
+			gw.drawLine(pt1.x(), pt1.y(), pt2.x(), pt2.y());
+		}
 
 		// Draw some text to indicate the number of fingers touching the user interface.
 		// This is useful for debugging.
