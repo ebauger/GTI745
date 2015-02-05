@@ -150,6 +150,7 @@ class MyCursor {
 	public static final int TYPE_CAMERA_PAN_ZOOM = 3;
 	public static final int TYPE_SELECTION = 4;
 	public static final int TYPE_DIRECT_MANIPULATION = 5;
+	public static final int TYPE_MULT_SELECTION = 6;
 	public int type = TYPE_NOTHING;
 
 
@@ -360,6 +361,7 @@ class Palette {
 	public int movePalette_buttonIndex;
 	public int ink_buttonIndex;
 	public int select_buttonIndex;
+	public int mult_select_buttonIndex;
 	public int manipulate_buttonIndex;
 	public int camera_buttonIndex;
 	public int black_buttonIndex;
@@ -397,11 +399,15 @@ class Palette {
 		select_buttonIndex = buttons.size();
 		buttons.add( b );
 
-		b = new PaletteButton( 3*W, 0, "Manip.", "When active, use one or two other fingers to directly manipulate the selection.", true );
+		b = new PaletteButton( 3*W, 0, "Mult. Sel.", "When active, use another finger to select strokes.", true );
+		mult_select_buttonIndex = buttons.size();
+		buttons.add( b );
+
+		b = new PaletteButton( 4*W, 0, "Manip.", "When active, use one or two other fingers to directly manipulate the selection.", true );
 		manipulate_buttonIndex = buttons.size();
 		buttons.add( b );
 
-		b = new PaletteButton( 4*W, 0, "Camera", "When active, use one or two other fingers to directly manipulate the camera.", true );
+		b = new PaletteButton( 5*W, 0, "Camera", "When active, use one or two other fingers to directly manipulate the camera.", true );
 		camera_buttonIndex = buttons.size();
 		buttons.add( b );
 
@@ -554,7 +560,7 @@ class UserContext {
 				gw.setColor(0,0,0);
 				gw.drawPolyline( cursor.getPositions() );
 			}
-			else if ( cursor.type == MyCursor.TYPE_SELECTION ) {
+			else if ( cursor.type == MyCursor.TYPE_SELECTION || cursor.type == MyCursor.TYPE_MULT_SELECTION) {
 				if ( cursor.doesDragLookLikeLassoGesture() ) {
 					// draw filled polygon
 					gw.setColor(0,0,0,0.2f);
@@ -627,6 +633,7 @@ class UserContext {
 					else if (
 						indexOfButton == palette.ink_buttonIndex
 						|| indexOfButton == palette.select_buttonIndex
+						|| indexOfButton == palette.mult_select_buttonIndex
 						|| indexOfButton == palette.manipulate_buttonIndex
 						|| indexOfButton == palette.camera_buttonIndex
 					) {
@@ -743,6 +750,21 @@ class UserContext {
 						cursorIndex = cursorContainer.updateCursorById( id, x, y );
 						cursor = cursorContainer.getCursorByIndex( cursorIndex );
 						cursor.setType( MyCursor.TYPE_SELECTION );
+					}
+					else {
+						cursorIndex = cursorContainer.updateCursorById( id, x, y );
+						cursor = cursorContainer.getCursorByIndex( cursorIndex );
+						cursor.setType( MyCursor.TYPE_NOTHING );
+					}
+				}
+				else if ( palette.currentlyActiveModalButton == palette.mult_select_buttonIndex )
+				{
+					// The new finger should only start selecting
+					// if there is not already another finger performing selection.
+					if ( cursorContainer.getNumCursorsOfGivenType( MyCursor.TYPE_MULT_SELECTION ) == 0 ) {
+						cursorIndex = cursorContainer.updateCursorById( id, x, y );
+						cursor = cursorContainer.getCursorByIndex( cursorIndex );
+						cursor.setType( MyCursor.TYPE_MULT_SELECTION );
 					}
 					else {
 						cursorIndex = cursorContainer.updateCursorById( id, x, y );
@@ -874,7 +896,7 @@ class UserContext {
 					}
 				}
 			}
-			else if ( cursor.type == MyCursor.TYPE_SELECTION ) {
+			else if ( cursor.type == MyCursor.TYPE_SELECTION || cursor.type == MyCursor.TYPE_MULT_SELECTION ) {
 				if ( type == MultitouchFramework.TOUCH_EVENT_UP ) {
 					// up event
 					cursorIndex = cursorContainer.updateCursorById( id, x, y );
@@ -889,11 +911,12 @@ class UserContext {
 						for ( Point2D p : cursor.getPositions() ) {
 							lassoPolygonPoints.add( gw.convertPixelsToWorldSpaceUnits( p ) );
 						}
-
-						selectedStrokes.clear();
+						if(cursor.type != MyCursor.TYPE_MULT_SELECTION)
+							selectedStrokes.clear();
 						for ( Stroke s : drawing.strokes ) {
 							if ( s.isContainedInLassoPolygon( lassoPolygonPoints ) )
-								selectedStrokes.add( s );
+								if(!selectedStrokes.contains(s))
+									selectedStrokes.add( s );
 						}
 					}
 					else {
@@ -904,10 +927,12 @@ class UserContext {
 							gw.convertPixelsToWorldSpaceUnits( cursor.getCurrentPosition() )
 						);
 
-						selectedStrokes.clear();
+						if(cursor.type != MyCursor.TYPE_MULT_SELECTION)
+							selectedStrokes.clear();
 						for ( Stroke s : drawing.strokes ) {
 							if ( s.isContainedInRectangle( selectedRectangle ) )
-								selectedStrokes.add( s );
+								if(!selectedStrokes.contains(s))
+									selectedStrokes.add( s );
 						}
 					}
 
@@ -1146,6 +1171,7 @@ public class SimpleWhiteboard implements Runnable, ActionListener {
 			
 			Point2D pt1 = Point2D.sum(centerOfDividingLine, Vector2D.mult(direction, 10000));
 			Point2D pt2 = Point2D.sum(centerOfDividingLine, Vector2D.mult(direction, -10000));
+			gw.setColor(Color.BLACK);
 			gw.drawLine(pt1.x(), pt1.y(), pt2.x(), pt2.y());
 		}
 
