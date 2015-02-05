@@ -502,6 +502,7 @@ class UserContext {
 	public Palette palette = new Palette();
 	private CursorContainer cursorContainer = new CursorContainer();
 	private Drawing drawing = null;
+	// TODO: list pour faire un undo
 	private Stroke lastStrokeCreated = null;
 
 	private ArrayList< Stroke > selectedStrokes = new ArrayList< Stroke >();
@@ -735,7 +736,7 @@ class UserContext {
 						cursorIndex = cursorContainer.updateCursorById( id, x, y );
 						cursor = cursorContainer.getCursorByIndex( cursorIndex );
 						cursor.setType( MyCursor.TYPE_INTERACTING_WITH_WIDGET, indexOfButton );
-						
+						// TODO: undo
 						drawing.strokes.remove(lastStrokeCreated);
 						lastStrokeCreated = null;
 					}
