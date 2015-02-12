@@ -1,6 +1,7 @@
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
-
+import java.util.Deque;
 import java.awt.Color;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
@@ -503,7 +504,8 @@ class UserContext {
 	private CursorContainer cursorContainer = new CursorContainer();
 	private Drawing drawing = null;
 	// TODO: list pour faire un undo
-	private Stroke lastStrokeCreated = null;
+	private Deque<Stroke> lastStrokes = new ArrayDeque<Stroke>();
+	//private Stroke lastStrokeCreated = null;
 
 	private ArrayList< Stroke > selectedStrokes = new ArrayList< Stroke >();
 
@@ -737,8 +739,11 @@ class UserContext {
 						cursor = cursorContainer.getCursorByIndex( cursorIndex );
 						cursor.setType( MyCursor.TYPE_INTERACTING_WITH_WIDGET, indexOfButton );
 						// TODO: undo
-						drawing.strokes.remove(lastStrokeCreated);
-						lastStrokeCreated = null;
+						if(!lastStrokes.isEmpty())
+						{
+							Stroke last = lastStrokes.pop();
+							drawing.strokes.remove(last);
+						}
 					}
 					else {
 						// The event occurred on some part of the palette where there are no buttons.
@@ -894,8 +899,7 @@ class UserContext {
 						newStroke.addPoint( gw.convertPixelsToWorldSpaceUnits( p ) );
 					}
 					drawing.addStroke( newStroke );
-					
-					lastStrokeCreated = newStroke;
+					lastStrokes.push(newStroke);
 
 					cursorContainer.removeCursorByIndex( cursorIndex );
 				}
