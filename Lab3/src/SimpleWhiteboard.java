@@ -743,6 +743,10 @@ class UserContext {
 						{
 							Stroke last = lastStrokes.pop();
 							drawing.strokes.remove(last);
+							if(selectedStrokes.contains(last))
+							{
+								selectedStrokes.remove(last);
+							}
 						}
 					}
 					else {
