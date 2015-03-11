@@ -1,13 +1,11 @@
 
 import java.util.ArrayList;
-
 import java.awt.Container;
 import java.awt.Component;
 import java.awt.Graphics;
 // import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.Dimension;
-
 import java.awt.event.KeyListener;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseMotionListener;
@@ -16,6 +14,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JMenuBar;
@@ -31,7 +30,6 @@ import javax.swing.BoxLayout;
 import javax.swing.Box;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
-
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.MidiChannel;
@@ -346,6 +344,19 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 	public void mouseClicked( MouseEvent e ) { }
 	public void mouseEntered( MouseEvent e ) { }
 	public void mouseExited( MouseEvent e ) { }
+	
+	public void generateRandomScore(int numberOfNotesToGenerate)
+	{
+		RandomScoreGenerator r = new RandomScoreGenerator(RandomNote.getMajorScale(), score.midiNoteNumberOfMiddleC);
+		for(int i = 0; i < numberOfNotesToGenerate; i++)
+		{
+			int noteValue = r.getNextNote() - score.midiNoteNumberOfLowestPitch;
+			if ( !score.grid[i][noteValue] ) {
+				score.grid[i][noteValue] = true;
+			}
+		}
+		repaint();
+	}
 
 	private void paint( int mouse_x, int mouse_y ) {
 		int newBeatOfMouseCursor = score.getBeatForMouseX( gw, mouse_x );
@@ -642,6 +653,8 @@ public class SimplePianoRoll implements ActionListener {
 	JRadioButton doNothingUponRolloverRadioButton;
 	JRadioButton playNoteUponRolloverRadioButton;
 	JRadioButton playNoteUponRolloverIfSpecialKeyHeldDownRadioButton;
+	
+	JButton generateRandomScoreButton;
 
 	public boolean isMusicPlaying = false;
 	public boolean isMusicLoopedWhenPlayed = false;
@@ -763,6 +776,10 @@ public class SimplePianoRoll implements ActionListener {
 		}
 		else if ( source == playNoteUponRolloverIfSpecialKeyHeldDownRadioButton ) {
 			rolloverMode = RM_PLAY_NOTE_UPON_ROLLOVER_IF_SPECIAL_KEY_HELD_DOWN;
+		}
+		else if( source == generateRandomScoreButton ) {
+			// TODO add numerical up/down for number of notes
+			canvas.generateRandomScore(30);
 		}
 	}
 
@@ -897,6 +914,11 @@ public class SimplePianoRoll implements ActionListener {
 				playNoteUponRolloverIfSpecialKeyHeldDownRadioButton.setSelected(true);
 			toolPanel.add( playNoteUponRolloverIfSpecialKeyHeldDownRadioButton );
 			rolloverModeButtonGroup.add( playNoteUponRolloverIfSpecialKeyHeldDownRadioButton );
+			
+		generateRandomScoreButton = new JButton( "Generate Random Score" );
+		generateRandomScoreButton.setAlignmentX( Component.LEFT_ALIGNMENT );
+		generateRandomScoreButton.addActionListener(this);
+		toolPanel.add( generateRandomScoreButton );
 
 		frame.pack();
 		frame.setVisible( true );
