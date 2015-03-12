@@ -202,6 +202,15 @@ class Score {
 		);
 	}
 
+	public void clearGrid()
+	{
+		for ( int y = 0; y < numPitches; ++y ) {
+			for ( int x = 0; x < numBeats; ++x ) {
+				grid[x][y] = false;
+			}
+		}
+	}
+
 }
 
 class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotionListener, Runnable {
@@ -347,11 +356,13 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 	
 	public void generateRandomScore(int numberOfNotesToGenerate)
 	{
+		score.clearGrid();
+		
 		RandomScoreGenerator r = new RandomScoreGenerator(RandomNote.getMajorScale(), score.midiNoteNumberOfMiddleC);
 		for(int i = 0; i < numberOfNotesToGenerate; i++)
 		{
 			int noteValue = r.getNextNote() - score.midiNoteNumberOfLowestPitch;
-			if ( !score.grid[i][noteValue] ) {
+			if ( noteValue >= 0 && !score.grid[i][noteValue] ) {
 				score.grid[i][noteValue] = true;
 			}
 		}

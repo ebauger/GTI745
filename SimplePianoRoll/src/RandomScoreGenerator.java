@@ -46,6 +46,11 @@ class RandomNote
 		return Collections.unmodifiableList(Arrays.asList(new RandomNote[] { C, D, E, F, G, A, B, C2 }));
 	}
 	
+	public static List<RandomNote> getMajorPentatonicScale()
+	{
+		return Collections.unmodifiableList(Arrays.asList(new RandomNote[] { CSharp, DSharp, FSharp, GSharp, ASharp }));
+	}
+	
 	private static final RandomNote C = new RandomNote("C", 0);
 	private static final RandomNote CSharp = new RandomNote("C#", 1);
 	private static final RandomNote D = new RandomNote("D", 2);
@@ -72,5 +77,11 @@ class RandomNote
 	{
 		this.name = name;
 		this.value = value;
+	}
+	
+	private RandomNote(String name, int value, int weight)
+	{
+		this(name, value);
+		this.weight = weight;
 	}
 }
