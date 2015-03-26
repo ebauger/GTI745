@@ -61,6 +61,26 @@ import javax.sound.midi.MidiChannel;
 */
 
 
+class Note {
+	public int beat;
+	public int midi;
+	
+	public Note(int beat, int midi)
+	{
+		this.beat = beat;
+		this.midi = midi;
+	}
+	
+	@Override 
+	public boolean equals(Object arg)
+	{
+		if (this == arg) return true;
+		if (!(arg instanceof Note)) return false;
+		Note n = (Note) arg;
+		return beat == n.beat &&
+				midi == n.midi;
+	}
+}
 class Score {
 	public static final int midiNoteNumberOfMiddleC = 60;
 
@@ -69,14 +89,28 @@ class Score {
 	public static final int midiNoteNumberOfLowestPitch = 21;
 	public int numBeats = 128;
 	public boolean [][] grid;
+	private ArrayList<Note> selectedNotes;
 
 	public static final int numPitchesInOctave = 12;
 	public String [] namesOfPitchClasses;
 	public boolean [] pitchClassesInMajorScale;
 	public boolean [] pitchClassesToEmphasizeInMajorScale;
+	
+	public boolean isNoteActive(int x, int y)
+	{
+		return grid[x][y];
+	}
+	public void setNote(int x, int y, boolean value)
+	{
+		if(grid[x][y] != value)
+			grid[x][y] = value;
+		if(!value)
+			selectedNotes.remove(new Note(x, y));
+	}
 
 	public Score() {
 		grid = new boolean[ numBeats ][ numPitches ];
+		selectedNotes = new ArrayList<Note>();
 
 		namesOfPitchClasses = new String[ numPitchesInOctave ];
 		namesOfPitchClasses[ 0] = "C";
@@ -186,11 +220,17 @@ class Score {
 				gw.fillRect( x+0.45f, -numPitches, 0.1f, numPitches );
 			}
 		}
-		gw.setColor( 0, 0, 0 );
 		for ( int y = 0; y < numPitches; ++y ) {
 			for ( int x = 0; x < numBeats; ++x ) {
+				gw.setColor( 0, 0, 0 );
+				if(selectedNotes.contains(new Note(x, y)))
+				{
+					gw.setColor( Color.ORANGE );
+				}
 				if ( grid[x][y] )
+				{
 					gw.fillRect( x+0.3f, -y-0.7f, 0.4f, 0.4f );
+				}
 			}
 		}
 	}
@@ -208,6 +248,42 @@ class Score {
 			for ( int x = 0; x < numBeats; ++x ) {
 				grid[x][y] = false;
 			}
+		}
+		clearSelected();
+	}
+	
+	public void clearSelected()
+	{
+		selectedNotes.clear();
+	}
+	
+	public void selectNotesInRect(int startBeat, int endBeat, int startMidi, int endMidi)
+	{
+		for(int x = startBeat; x <= endBeat; x++)
+		{
+			for(int y = startMidi; y <= endMidi; y++)
+			{
+				Note n = new Note(x, y);
+				if(grid[x][y] && !selectedNotes.contains(n))
+				{
+					selectedNotes.add(n);
+				}
+			}
+		}
+	}
+	
+	public void transpose(int delta_x, int delta_y)
+	{
+		for(Note n : selectedNotes)
+		{
+			int newBeat = n.beat + delta_x;
+			int newMidi = n.midi - delta_y;
+			
+			grid[n.beat][n.midi] = false;
+			grid[newBeat][newMidi] = true;
+			
+			n.beat = newBeat;
+			n.midi = newMidi;
 		}
 	}
 
@@ -239,7 +315,8 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 	RadialMenuWidget radialMenu = new RadialMenuWidget();
 	ControlMenuWidget controlMenu = new ControlMenuWidget();
 
-	int mouse_x, mouse_y, old_mouse_x, old_mouse_y;
+	int mouse_x, mouse_y, old_mouse_x, old_mouse_y, 
+		startOfSelectRect_x = -1, startOfSelectRect_y = -1;
 
 	boolean isControlKeyDown = false;
 
@@ -273,9 +350,12 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 		return new Dimension( Constant.INITIAL_WINDOW_WIDTH, Constant.INITIAL_WINDOW_HEIGHT );
 	}
 	public void clear() {
-		for ( int y = 0; y < score.numPitches; ++y )
-			for ( int x = 0; x < score.numBeats; ++x )
-				score.grid[x][y] = false;
+		score.clearGrid();
+		repaint();
+	}
+	public void clearSelectedNotes()
+	{
+		score.clearSelected();
 		repaint();
 	}
 	public void frameAll() {
@@ -327,6 +407,17 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 				gw.drawRect( x0, y0, width, height );
 				gw.drawString( mouse_x + x_offset + margin, mouse_y - margin, s );
 			}
+			
+			if(startOfSelectRect_x >= 0 && startOfSelectRect_y >= 0)
+			{
+				int x0 = startOfSelectRect_x > mouse_x ? mouse_x : startOfSelectRect_x;
+				int y0 = startOfSelectRect_y > mouse_y ? mouse_y : startOfSelectRect_y;
+				int height = Math.abs(startOfSelectRect_y - mouse_y);
+				int width = Math.abs(startOfSelectRect_x - mouse_x);
+				gw.setColor(Color.GREEN);
+				gw.drawRect(x0, y0, width, height);
+			}
+			
 		}
 	}
 
@@ -385,6 +476,7 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 			if ( simplePianoRoll.dragMode == SimplePianoRoll.DM_DRAW_NOTES ) {
 				if ( score.grid[beatOfMouseCursor][midiNoteNumberOfMouseCurser-score.midiNoteNumberOfLowestPitch] != true ) {
 					score.grid[beatOfMouseCursor][midiNoteNumberOfMouseCurser-score.midiNoteNumberOfLowestPitch] = true;
+					System.out.println("Paint("+beatOfMouseCursor+", "+(midiNoteNumberOfMouseCurser-score.midiNoteNumberOfLowestPitch) +")");
 					repaint();
 				}
 			}
@@ -420,7 +512,15 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 				return;
 		}
 		if ( SwingUtilities.isLeftMouseButton(e) ) {
-			paint( mouse_x, mouse_y );
+			if(simplePianoRoll.dragMode == SimplePianoRoll.DM_SELECT_NOTES)
+			{
+				startOfSelectRect_x = mouse_x;
+				startOfSelectRect_y = mouse_y;
+			}
+			else
+			{
+				paint( mouse_x, mouse_y );
+			}
 		}
 	}
 
@@ -465,6 +565,28 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 				repaint();
 			if ( returnValue != CustomWidget.S_EVENT_NOT_CONSUMED )
 				return;
+		}
+		if(simplePianoRoll.dragMode == SimplePianoRoll.DM_SELECT_NOTES)
+		{
+			int x0 = startOfSelectRect_x > mouse_x ? mouse_x : startOfSelectRect_x;
+			int y0 = startOfSelectRect_y > mouse_y ? mouse_y : startOfSelectRect_y;
+			int height = Math.abs(startOfSelectRect_y - mouse_y);
+			int width = Math.abs(startOfSelectRect_x - mouse_x);
+			
+			System.out.println("Rect(" + x0 + ", " + y0 + ", " + width + ", " +  + height + ")");
+			
+			int startBeat = score.getBeatForMouseX(gw, x0);
+			int endBeat = score.getBeatForMouseX(gw, x0 + width);
+			int startMidi = score.getMidiNoteNumberForMouseY(gw, y0 + height) - score.midiNoteNumberOfLowestPitch;
+			int endMidi = score.getMidiNoteNumberForMouseY(gw, y0) - score.midiNoteNumberOfLowestPitch;
+
+			System.out.println("beat(" + startBeat + ", " + endBeat + "); MIDI(" + startMidi + ", " +  + endMidi + ")");
+			
+			score.selectNotesInRect(startBeat, endBeat, startMidi, endMidi);
+			
+			startOfSelectRect_x = -1;
+			startOfSelectRect_y = -1;
+			repaint();
 		}
 	}
 
@@ -564,6 +686,9 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 				case CONTROL_MENU_ZOOM:
 					gw.zoomIn( (float)Math.pow( Constant.zoomFactorPerPixelDragged, delta_x-delta_y ) );
 					break;
+				case CONTROL_MENU_TRANSPOSE:
+					score.transpose(delta_x, delta_y);
+					break;
 				default:
 					// TODO XXX
 					break;
@@ -660,6 +785,7 @@ public class SimplePianoRoll implements ActionListener {
 
 	JRadioButton drawNotesRadioButton;
 	JRadioButton eraseNotesRadioButton;
+	JRadioButton selectNotesRadioButton;
 
 	JRadioButton doNothingUponRolloverRadioButton;
 	JRadioButton playNoteUponRolloverRadioButton;
@@ -675,6 +801,7 @@ public class SimplePianoRoll implements ActionListener {
 	// The DM_ prefix is for Drag Mode
 	public static final int DM_DRAW_NOTES = 0;
 	public static final int DM_ERASE_NOTES = 1;
+	public static final int DM_SELECT_NOTES = 2;
 	public int dragMode = DM_DRAW_NOTES;
 
 	// The RM_ prefix is for Rollover Mode
@@ -693,10 +820,13 @@ public class SimplePianoRoll implements ActionListener {
 	}
 	public void setDragMode( int newDragMode ) {
 		dragMode = newDragMode;
+		canvas.clearSelectedNotes();
 		if ( dragMode == DM_DRAW_NOTES )
 			drawNotesRadioButton.setSelected(true);
 		else if ( dragMode == DM_ERASE_NOTES )
 			eraseNotesRadioButton.setSelected(true);
+		else if( dragMode == DM_SELECT_NOTES )
+			selectNotesRadioButton.setSelected(true);
 		else assert false;
 	}
 
@@ -774,10 +904,16 @@ public class SimplePianoRoll implements ActionListener {
 			isMusicLoopedWhenPlayed = loopWhenPlayingCheckBox.isSelected();
 		}
 		else if ( source == drawNotesRadioButton ) {
+			canvas.clearSelectedNotes();
 			dragMode = DM_DRAW_NOTES;
 		}
 		else if ( source == eraseNotesRadioButton ) {
+			canvas.clearSelectedNotes();
 			dragMode = DM_ERASE_NOTES;
+		}
+		else if ( source == selectNotesRadioButton ) {
+			canvas.clearSelectedNotes();
+			dragMode = DM_SELECT_NOTES;
 		}
 		else if ( source == doNothingUponRolloverRadioButton ) {
 			rolloverMode = RM_DO_NOTHING_UPON_ROLLOVER;
@@ -898,6 +1034,13 @@ public class SimplePianoRoll implements ActionListener {
 			if ( dragMode == DM_ERASE_NOTES ) eraseNotesRadioButton.setSelected(true);
 			toolPanel.add( eraseNotesRadioButton );
 			dragModeButtonGroup.add( eraseNotesRadioButton );
+			
+			selectNotesRadioButton = new JRadioButton( "Select Notes" );
+			selectNotesRadioButton.setAlignmentX( Component.LEFT_ALIGNMENT );
+			selectNotesRadioButton.addActionListener(this);
+			if ( dragMode == DM_SELECT_NOTES ) selectNotesRadioButton.setSelected(true);
+			toolPanel.add( selectNotesRadioButton );
+			dragModeButtonGroup.add( selectNotesRadioButton );
 
 		toolPanel.add( Box.createRigidArea(new Dimension(1,20)) );
 		toolPanel.add( new JLabel("Upon cursor rollover:") );
