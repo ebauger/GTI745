@@ -14,6 +14,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
+import javax.swing.GroupLayout;
+import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
@@ -24,12 +26,19 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JRadioButton;
 import javax.swing.JCheckBox;
 import javax.swing.JOptionPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SpinnerModel;
+import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingUtilities;
 import javax.swing.ButtonGroup;
 import javax.swing.BoxLayout;
 import javax.swing.Box;
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.MidiChannel;
@@ -311,6 +320,24 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 	public static final int CONTROL_MENU_TEMPO = 2;
 	public static final int CONTROL_MENU_TOTAL_DURATION = 3;
 	public static final int CONTROL_MENU_TRANSPOSE = 4;
+	
+	public static final int MAX_BPM = 500;
+	public static final int MIN_BPM = 120;
+	private int currentBPM = 220;
+	private boolean currentBpmIsDirty = true;
+	private Metronome metronome = new Metronome();
+	
+	public int getCurrentBpm() { return currentBPM; }
+	public void setCurrentBpm( int newBpm )
+	{
+		if(newBpm > MAX_BPM) newBpm = MAX_BPM;
+		if(newBpm < MIN_BPM) newBpm = MIN_BPM;
+		
+		if(newBpm == currentBPM) return;
+		
+		currentBPM = newBpm;
+		currentBpmIsDirty = true;
+	}
 
 	RadialMenuWidget radialMenu = new RadialMenuWidget();
 	ControlMenuWidget controlMenu = new ControlMenuWidget();
@@ -476,7 +503,6 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 			if ( simplePianoRoll.dragMode == SimplePianoRoll.DM_DRAW_NOTES ) {
 				if ( score.grid[beatOfMouseCursor][midiNoteNumberOfMouseCurser-score.midiNoteNumberOfLowestPitch] != true ) {
 					score.grid[beatOfMouseCursor][midiNoteNumberOfMouseCurser-score.midiNoteNumberOfLowestPitch] = true;
-					System.out.println("Paint("+beatOfMouseCursor+", "+(midiNoteNumberOfMouseCurser-score.midiNoteNumberOfLowestPitch) +")");
 					repaint();
 				}
 			}
@@ -559,6 +585,8 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 				return;
 		}
 		if ( controlMenu.isVisible() ) {
+			metronome.stop();
+			
 			int returnValue = controlMenu.releaseEvent( mouse_x, mouse_y );
 
 			if ( returnValue == CustomWidget.S_REDRAW )
@@ -689,6 +717,24 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 				case CONTROL_MENU_TRANSPOSE:
 					score.transpose(delta_x, delta_y);
 					break;
+				case CONTROL_MENU_TEMPO:
+					if(delta_y != 0)
+					{
+						int bpmChange = delta_y;
+						if (bpmChange > 5) bpmChange = 5;
+						if (bpmChange < -5) bpmChange = -5;
+						setCurrentBpm(getCurrentBpm() + bpmChange);
+						simplePianoRoll.setCurrentBpm(getCurrentBpm());
+					}
+					
+					if(Constant.USE_SOUND)
+					{
+						if(!metronome.isStarted())
+							metronome.start(getCurrentBpm());
+						else
+							metronome.updateBpm(getCurrentBpm());
+					}
+					break;
 				default:
 					// TODO XXX
 					break;
@@ -722,7 +768,8 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 	}
 	public void run() {
 		try {
-			int sleepIntervalInMilliseconds = 150;
+			int sleepIntervalInMilliseconds = calculateSleepIntervalFromBpm(currentBPM);
+			currentBpmIsDirty = false;
 			while (true) {
 
 				// Here's where the thread does some work
@@ -753,15 +800,24 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 						}
 					}
 				}
-				thread.sleep( sleepIntervalInMilliseconds );  // interval given in milliseconds
+				if(currentBpmIsDirty)
+				{
+					sleepIntervalInMilliseconds = calculateSleepIntervalFromBpm(currentBPM);
+					currentBpmIsDirty = false;
+				}
+				Thread.sleep( sleepIntervalInMilliseconds );  // interval given in milliseconds
 			}
 		}
 		catch (InterruptedException e) { }
 	}
 
+	private static int calculateSleepIntervalFromBpm( int bpm )
+	{
+		return 1000 / (bpm / 60);
+	}
 }
 
-public class SimplePianoRoll implements ActionListener {
+public class SimplePianoRoll implements ActionListener, ChangeListener {
 
 	static final String applicationName = "Simple Piano Roll";
 
@@ -792,6 +848,8 @@ public class SimplePianoRoll implements ActionListener {
 	JRadioButton playNoteUponRolloverIfSpecialKeyHeldDownRadioButton;
 	
 	JButton generateRandomScoreButton;
+	
+	JSpinner currentBpmSpinner;
 
 	public boolean isMusicPlaying = false;
 	public boolean isMusicLoopedWhenPlayed = false;
@@ -828,6 +886,10 @@ public class SimplePianoRoll implements ActionListener {
 		else if( dragMode == DM_SELECT_NOTES )
 			selectNotesRadioButton.setSelected(true);
 		else assert false;
+	}
+	public void setCurrentBpm( int newBpm )
+	{
+		currentBpmSpinner.setValue(newBpm);
 	}
 
 	public void setRolloverMode( int newRolloverMode ) {
@@ -929,7 +991,14 @@ public class SimplePianoRoll implements ActionListener {
 			canvas.generateRandomScore(30);
 		}
 	}
-
+	
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		Object source = e.getSource();
+		if( source == currentBpmSpinner ) {
+			canvas.setCurrentBpm((int) currentBpmSpinner.getValue());
+		}
+	}
 
 	// For thread safety, this should be invoked
 	// from the event-dispatching thread.
@@ -1073,7 +1142,18 @@ public class SimplePianoRoll implements ActionListener {
 		generateRandomScoreButton.setAlignmentX( Component.LEFT_ALIGNMENT );
 		generateRandomScoreButton.addActionListener(this);
 		toolPanel.add( generateRandomScoreButton );
-
+		
+		JLabel lbl1 = new JLabel("BPM: ");
+		lbl1.setAlignmentX( Component.LEFT_ALIGNMENT );
+		toolPanel.add(lbl1);
+    
+		SpinnerModel m = new SpinnerNumberModel(canvas.getCurrentBpm(), canvas.MIN_BPM, canvas.MAX_BPM, 1);
+		currentBpmSpinner = new JSpinner( m );
+		currentBpmSpinner.addChangeListener(this);
+		currentBpmSpinner.setAlignmentX( Component.LEFT_ALIGNMENT );
+		currentBpmSpinner.setMaximumSize(new Dimension(75,30));
+		toolPanel.add( currentBpmSpinner );
+		
 		frame.pack();
 		frame.setVisible( true );
 
