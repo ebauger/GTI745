@@ -723,7 +723,7 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 						int bpmChange = delta_y;
 						if (bpmChange > 5) bpmChange = 5;
 						if (bpmChange < -5) bpmChange = -5;
-						setCurrentBpm(getCurrentBpm() + bpmChange);
+						setCurrentBpm(getCurrentBpm() - bpmChange);
 						simplePianoRoll.setCurrentBpm(getCurrentBpm());
 					}
 					
