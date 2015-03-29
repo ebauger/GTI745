@@ -283,16 +283,19 @@ class Score {
 	
 	public void transpose(int delta_x, int delta_y)
 	{
-		for(Note n : selectedNotes)
+		synchronized(this)
 		{
-			int newBeat = n.beat + delta_x;
-			int newMidi = n.midi - delta_y;
-			
-			grid[n.beat][n.midi] = false;
-			grid[newBeat][newMidi] = true;
-			
-			n.beat = newBeat;
-			n.midi = newMidi;
+			for(Note n : selectedNotes)
+			{
+				int newBeat = n.beat + delta_x;
+				int newMidi = n.midi - delta_y;
+				
+				grid[n.beat][n.midi] = false;
+				grid[newBeat][newMidi] = true;
+				
+				n.beat = newBeat;
+				n.midi = newMidi;
+			}
 		}
 	}
 
@@ -601,14 +604,10 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 			int height = Math.abs(startOfSelectRect_y - mouse_y);
 			int width = Math.abs(startOfSelectRect_x - mouse_x);
 			
-			System.out.println("Rect(" + x0 + ", " + y0 + ", " + width + ", " +  + height + ")");
-			
 			int startBeat = score.getBeatForMouseX(gw, x0);
 			int endBeat = score.getBeatForMouseX(gw, x0 + width);
 			int startMidi = score.getMidiNoteNumberForMouseY(gw, y0 + height) - score.midiNoteNumberOfLowestPitch;
 			int endMidi = score.getMidiNoteNumberForMouseY(gw, y0) - score.midiNoteNumberOfLowestPitch;
-
-			System.out.println("beat(" + startBeat + ", " + endBeat + "); MIDI(" + startMidi + ", " +  + endMidi + ")");
 			
 			score.selectNotesInRect(startBeat, endBeat, startMidi, endMidi);
 			
