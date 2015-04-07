@@ -105,6 +105,9 @@ class Score {
 	public boolean [] pitchClassesInMajorScale;
 	public boolean [] pitchClassesToEmphasizeInMajorScale;
 	
+	private static final int MAX_NUM_BEATS = 2000;
+	private static final int MIN_NUM_BEATS = 30;
+	
 	public boolean isNoteActive(int x, int y)
 	{
 		return grid[x][y];
@@ -187,12 +190,13 @@ class Score {
 		boolean highlightMajorCScale,
 		int midiNoteNumber1ToHilite,
 		int beat1ToHilite,
-		int beat2ToHilite
+		int beat2ToHilite,
+		boolean showMouseHelper
 	) {
 		for ( int y = 0; y < numPitches; y++ ) {
 			int pitchClass = ( y + pitchClassOfLowestPitch ) % numPitchesInOctave;
 			int midiNoteNumber = y + midiNoteNumberOfLowestPitch;
-			if ( midiNoteNumber == midiNoteNumber1ToHilite ) { // mouse cursor
+			if ( showMouseHelper && midiNoteNumber == midiNoteNumber1ToHilite ) { // mouse cursor
 				gw.setColor( 0, 1, 1 );
 				gw.fillRect( 0, -y-0.8f, numBeats, 0.6f );
 			}
@@ -215,7 +219,7 @@ class Score {
 			}
 		}
 		for ( int x = 0; x < numBeats; x++ ) {
-			if ( x == beat1ToHilite ) { // mouse cursor
+			if ( showMouseHelper && x == beat1ToHilite ) { // mouse cursor
 				gw.setColor( 0, 1, 1 );
 				gw.fillRect( x+0.2f, -numPitches, 0.6f, numPitches );
 			}
@@ -298,7 +302,30 @@ class Score {
 			}
 		}
 	}
-
+	
+	public void changeDuration(int variation)
+	{
+		synchronized(this)
+		{
+			int newNumBeats = numBeats + variation;
+			
+			if(newNumBeats < MIN_NUM_BEATS) newNumBeats = MIN_NUM_BEATS;
+			if(newNumBeats > MAX_NUM_BEATS) newNumBeats = MAX_NUM_BEATS;
+			
+			if(newNumBeats != numBeats)
+			{
+				boolean[][] newGrid = new boolean[ newNumBeats ][ numPitches ];
+				
+				for ( int y = 0; y < numPitches; ++y ) {
+					for ( int x = 0; x < numBeats && x < newNumBeats; ++x ) {
+						newGrid[x][y] = grid[x][y];
+					}
+				}
+				grid = newGrid;
+				numBeats = newNumBeats;
+			}
+		}
+	}
 }
 
 class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotionListener, Runnable {
@@ -407,7 +434,8 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 			simplePianoRoll.highlightMajorScale,
 			midiNoteNumberOfMouseCurser,
 			beatOfMouseCursor,
-			currentBeat
+			currentBeat,
+			simplePianoRoll.dragMode != SimplePianoRoll.DM_SELECT_NOTES
 		);
 
 		gw.setCoordinateSystemToPixels();
@@ -732,6 +760,19 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 							metronome.start(getCurrentBpm());
 						else
 							metronome.updateBpm(getCurrentBpm());
+					}
+					break;
+				case CONTROL_MENU_TOTAL_DURATION:
+					if(delta_x != 0)
+					{
+						boolean autoFrame = simplePianoRoll.isAutoFrameActive;
+						score.changeDuration(delta_x);
+						
+						if(autoFrame)
+						{
+							AlignedRectangle2D rect = score.getBoundingRectangle();
+							gw.frame(rect, true);
+						}
 					}
 					break;
 				default:
