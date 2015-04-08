@@ -13,10 +13,13 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.io.Serializable;
 
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.SequentialGroup;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JMenuBar;
@@ -39,6 +42,8 @@ import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
+import javax.sound.midi.InvalidMidiDataException;
 import javax.sound.midi.MidiSystem;
 import javax.sound.midi.Synthesizer;
 import javax.sound.midi.MidiChannel;
@@ -90,7 +95,12 @@ class Note {
 				midi == n.midi;
 	}
 }
-class Score {
+class Score implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public static final int midiNoteNumberOfMiddleC = 60;
 
 	public int numPitches = 88;
@@ -517,6 +527,17 @@ class MyCanvas extends JPanel implements KeyListener, MouseListener, MouseMotion
 		}
 		repaint();
 	}
+	
+	public void paintMidiScore(){
+		score.clearGrid();
+		//Load MidiHelp with file mid
+		//loop on grid notes.
+		repaint();
+	}
+	
+	public void setScore(Score s){
+		this.score = s;
+	}
 
 	private void paint( int mouse_x, int mouse_y ) {
 		int newBeatOfMouseCursor = score.getBeatForMouseX( gw, mouse_x );
@@ -868,6 +889,8 @@ public class SimplePianoRoll implements ActionListener, ChangeListener {
 	Synthesizer synthesizer;
 	MidiChannel [] midiChannels;
 
+	JMenuItem openMenuItem;
+	JMenuItem saveMenuItem;
 	JMenuItem clearMenuItem;
 	JMenuItem quitMenuItem;
 	JCheckBoxMenuItem showToolsMenuItem;
@@ -1030,6 +1053,37 @@ public class SimplePianoRoll implements ActionListener, ChangeListener {
 			// TODO add numerical up/down for number of notes
 			canvas.generateRandomScore(30);
 		}
+		else if( source == openMenuItem) {
+			JFileChooser chooser = new JFileChooser();
+		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "MID, MIDI & SPR Files", "mid", "midi", "spr");
+		    chooser.setFileFilter(filter);
+		    int returnVal = chooser.showOpenDialog(openMenuItem);
+		    if(returnVal == JFileChooser.APPROVE_OPTION) {
+		       System.out.println("You chose to open this file: " +
+		            chooser.getSelectedFile().getAbsolutePath());
+			    try {
+			    	canvas.score = MIDIHelper.loadMidiFile(chooser.getSelectedFile().getAbsolutePath());
+				} catch (IOException | InvalidMidiDataException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+		       
+		    }
+		}
+		else if( source == saveMenuItem) {
+			JFileChooser chooser = new JFileChooser();
+		    FileNameExtensionFilter filter = new FileNameExtensionFilter(
+		        "MID, MIDI & SPR Files", "mid", "midi", "spr");
+		    chooser.setFileFilter(filter);
+		    int returnVal = chooser.showSaveDialog(saveMenuItem);
+		    if(returnVal == JFileChooser.APPROVE_OPTION) {
+		       System.out.println("You chose to save this file: " +
+		            chooser.getSelectedFile().getAbsolutePath());
+			   MIDIHelper.saveMidiFile(canvas.score, chooser.getSelectedFile().getAbsolutePath());
+			   canvas.repaint();
+		    }
+		}
 	}
 	
 	@Override
@@ -1066,6 +1120,12 @@ public class SimplePianoRoll implements ActionListener, ChangeListener {
 
 		JMenuBar menuBar = new JMenuBar();
 			JMenu menu = new JMenu("File");
+				openMenuItem = new JMenuItem("Open");
+				openMenuItem.addActionListener(this);
+				menu.add(openMenuItem);
+				saveMenuItem = new JMenuItem("Save");
+				saveMenuItem.addActionListener(this);
+				menu.add(saveMenuItem);
 				clearMenuItem = new JMenuItem("Clear");
 				clearMenuItem.addActionListener(this);
 				menu.add(clearMenuItem);
